@@ -23,10 +23,10 @@ def changeTrafic(bitcoin, ethirium, bitStabilisation, ethStabilisation):
     print("- - - - - - - - -")
     print("1) Bitcoin: ", bitcoin)
     print("2) Ethirium: ", ethirium)
-    return bitcoin, ethirium
+    return bitcoin, ethirium, litecoin
 
 # покупка крипты
-def buyCrypto(crypto, value, bal):
+def buyCrypto(cryptoNum, crypto, value, bal, liCryptoBal, liCryptoPrices):
     print("- - - - - - - - - -") 
     if value.isdigit():
         value = int(value)
@@ -37,14 +37,13 @@ def buyCrypto(crypto, value, bal):
         print("Error")
         return
 
-    print("Choice crypto: ", crypto)
-    if crypto == "bitcoin":
-        print("buy bitcoin")
-
-    elif crypto == "ethirium":
-        print("buy ethirium")
-    else:
-        print("Error")
+    cryptoNewNum = cryptoNum - 1
+    print("Choice crypto: ", crypto[cryptoNewNum])
+    print(f"Buy {crypto[cryptoNewNum]} for: ", value, "$")
+    bal = bal - value
+    liCryptoBal[cryptoNewNum] = liCryptoBal[cryptoNewNum] + (value / liCryptoPrices[cryptoNewNum])
+    print("You have: ", liCryptoBal[cryptoNewNum], f"{crypto[cryptoNewNum]}")
+        
     return bal
 
 
@@ -81,11 +80,13 @@ for i in range(10):
 liCrypto = ["bitcoin", "ethirium", "litecoin"]
 liCryptoBal = [bitcoinBal, ethiriumBal, litecoinBal] = [0.2323, 1.1, 0]
 
-#value = input("Type value: ")
-value = "150"
-bal = buyCrypto(liCrypto[0], value, bal)
+#value = input("Type value $: ")
+value = "429"
+#cryptoNum = input("Type crypto (1,2,3): ")
+cryptoNum = 3
+bal = buyCrypto(cryptoNum, liCrypto, value, bal, liCryptoBal, liCryptoPrices)
 
 #printBalance()
-printCrypto(liCrypto, liCryptoBal, liCryptoPrices)
+#printCrypto(liCrypto, liCryptoBal, liCryptoPrices)
 
-print("\n\t- Program end -")
+print("\n- Program end -")
