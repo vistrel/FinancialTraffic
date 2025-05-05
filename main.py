@@ -26,8 +26,18 @@ def changeTrafic(bitcoin, ethirium, bitStabilisation, ethStabilisation):
     return bitcoin, ethirium, litecoin
 
 # покупка крипты
-def buyCrypto(cryptoNum, crypto, value, bal, liCryptoBal, liCryptoPrices):
-    print("- - - - - - - - - -") 
+def buyCrypto(crypto, bal, liCryptoBal, liCryptoPrices):
+    print("- - - - BUY - - - -") 
+    #cryptoNum = int(input("\t1)Bitcoin\n\t2)Ethirium\n\t3)Litecoin\nType crypto for buy: "))
+    cryptoNum = 3
+
+    if cryptoNum > len(crypto) or cryptoNum < 1:
+        print("Error cryptoNum")
+        return
+
+    #value = input("Type value $: ")
+    value = "429"
+
     if value.isdigit():
         value = int(value)
         if value > bal:
@@ -38,19 +48,49 @@ def buyCrypto(cryptoNum, crypto, value, bal, liCryptoBal, liCryptoPrices):
         return
 
     cryptoNewNum = cryptoNum - 1
-    print("Choice crypto: ", crypto[cryptoNewNum])
+    #print("Choice crypto: ", crypto[cryptoNewNum])
     print(f"Buy {crypto[cryptoNewNum]} for: ", value, "$")
     bal = bal - value
     liCryptoBal[cryptoNewNum] = liCryptoBal[cryptoNewNum] + (value / liCryptoPrices[cryptoNewNum])
-    print("You have: ", liCryptoBal[cryptoNewNum], f"{crypto[cryptoNewNum]}")
+    print("\t! You have: ", liCryptoBal[cryptoNewNum], f"{crypto[cryptoNewNum]}")
         
     return bal
 
 
 # продать крипту
-def sellCrypto():
-    print("- - - - - - - - - -") 
-    print("sell")
+def sellCrypto(bal, crypto, liCryptoBal, liCryptoPrices):
+    print("- - - - SELL - - - -")
+
+    #cryptoNum = int(input("\t1)Bitcoin\n\t2)Ethirium\n\t3)Litecoin\nType crypto for sell: "))
+    cryptoNum = 3
+
+    if cryptoNum > len(crypto) or cryptoNum < 1:
+        print("Error cryptoNum")
+        return
+    cryptoNewNum = cryptoNum - 1
+    if liCryptoBal[cryptoNewNum] <= 0:
+        print("You don't have this crypto")
+        return
+    print("You have: ", liCryptoBal[cryptoNewNum], f"{crypto[cryptoNewNum]}")
+    
+    #value = input("Type value crypto: ")
+    value = "0.15"
+    value = float(value)
+    if value > 0:
+        #value = int(value)
+        if value > liCryptoBal[cryptoNewNum]:
+            print("Not enough crypto")
+            return
+        liCryptoBal[cryptoNewNum] = liCryptoBal[cryptoNewNum] - value
+        bal = bal + (value * liCryptoPrices[cryptoNewNum])
+        print(f"Sell {crypto[cryptoNewNum]} for: ", round(value * liCryptoPrices[cryptoNewNum], 2), "$")
+        print("\t! You have: ", liCryptoBal[cryptoNewNum], f"{crypto[cryptoNewNum]}")
+    else:
+        print("Type value > 0")
+        return
+
+    return bal
+
 
 # логика прибыльной торговли
 def tradeLogic():
@@ -64,7 +104,7 @@ def printBalance():
 
 # крипто балик
 def printCrypto(liCrypto, liCryptoBal, liCryptoPrices):
-    print("- - - - - - - - - -")
+    print("- - - BALANCE - - -")
     for li in range(len(liCrypto)):
         if liCryptoBal[li] <= 0:
             continue
@@ -80,11 +120,9 @@ for i in range(10):
 liCrypto = ["bitcoin", "ethirium", "litecoin"]
 liCryptoBal = [bitcoinBal, ethiriumBal, litecoinBal] = [0.2323, 1.1, 0]
 
-#value = input("Type value $: ")
-value = "429"
-#cryptoNum = input("Type crypto (1,2,3): ")
-cryptoNum = 3
-bal = buyCrypto(cryptoNum, liCrypto, value, bal, liCryptoBal, liCryptoPrices)
+bal = buyCrypto(liCrypto, bal, liCryptoBal, liCryptoPrices)
+
+bal = sellCrypto(bal, liCrypto, liCryptoBal, liCryptoPrices)
 
 #printBalance()
 #printCrypto(liCrypto, liCryptoBal, liCryptoPrices)
