@@ -3,31 +3,27 @@ import random
 bal = 1000 # $
 day = 0
 
-liCryptoPrices = [bitcoin, ethirium, litecoin] = [99000, 4900, 800] # $
+liCryptoPrices = [bitcoin, ethirium, litecoin] = [99000.0, 4900.0, 800.0] # $
 
+liStabilisation = [bitcoinStabilisation, ethiriumStabilisation, litecoinStabilisation] = [0.008, 0.006, 0.0]
 
-bitStabilisation = 10
-ethStabilisation = 5
+liCrypto = ["bitcoin", "ethirium", "litecoin"]
+liCryptoBal = [bitcoinBal, ethiriumBal, litecoinBal] = [0.2323, 1.1, 0]
 
 # меняется цена крипті каждую секунду
-def changeTrafic(bitcoin, ethirium, bitStabilisation, ethStabilisation):
-    BitRandNum = random.randint(-2 ,2)
-    EthRandNum = random.randint(-2 ,2)
-    #print("rand num: ", randNum)
-    #BitRandNum = BitRandNum * 42
-    #EthRandNum = EthRandNum * 42
-    #print("rand num * 42: ", randNum)
-
-    bitcoin = (bitStabilisation + bitcoin + (bitcoin / 100 * BitRandNum))
-    ethirium = (ethStabilisation + ethirium + (ethirium / 100 * EthRandNum))
-    print("- - - - - - - - -")
-    print("1) Bitcoin: ", bitcoin)
-    print("2) Ethirium: ", ethirium)
-    return bitcoin, ethirium, litecoin
+def changeTrafic(liStabilisation, liCryptoPrices):
+    RandNum = random.uniform(-4 ,4)
+    #print(99000 + (99000 / 100 * (RandNum + liStabilisation[0])))
+    for i in range(len(liCryptoPrices)):
+        liCryptoPrices[i] = liCryptoPrices[i] + (liCryptoPrices[i] / 100 * (RandNum + liStabilisation[i]))
+        #liStabilisation[i] = liStabilisation[i] - 0.01
+    printCryptoPrice(liCrypto, liCryptoPrices)
+    #print("bitcoin: ", bitcoin)
+    return liCryptoPrices
 
 # покупка крипты
 def buyCrypto(crypto, bal, liCryptoBal, liCryptoPrices):
-    print("- - - - BUY - - - -") 
+    print("\n- - - - BUY - - - -") 
     #cryptoNum = int(input("\t1)Bitcoin\n\t2)Ethirium\n\t3)Litecoin\nType crypto for buy: "))
     cryptoNum = 3
 
@@ -56,10 +52,17 @@ def buyCrypto(crypto, bal, liCryptoBal, liCryptoPrices):
         
     return bal
 
+# цены крипты
+def printCryptoPrice(liCrypto, liCryptoPrices):
+    print("\n- - - CRYPTO PRICE - - -")
+    for li in range(len(liCryptoPrices)):
+        if li < len(liCryptoPrices):
+            print("\t" + liCrypto[li], "=", liCryptoPrices[li], "$")
+
 
 # продать крипту
 def sellCrypto(bal, crypto, liCryptoBal, liCryptoPrices):
-    print("- - - - SELL - - - -")
+    print("\n- - - - SELL - - - -")
 
     #cryptoNum = int(input("\t1)Bitcoin\n\t2)Ethirium\n\t3)Litecoin\nType crypto for sell: "))
     cryptoNum = 3
@@ -99,7 +102,7 @@ def tradeLogic():
 
 # балик
 def printBalance():
-    print("- - - - - - - - - -")    
+    print("\n- - - BALANCE - - -")    
     print("Balance: ", bal, "$")
 
 # крипто балик
@@ -114,15 +117,13 @@ def printCrypto(liCrypto, liCryptoBal, liCryptoPrices):
 
 for i in range(10):
     day += 1
-    liCryptoPrices = changeTrafic(bitcoin, ethirium, bitStabilisation, ethStabilisation)
-    print("Day: ", day)
+    liCryptoPrices = changeTrafic(liStabilisation, liCryptoPrices)
+    print("\tDay: ", day)
 
-liCrypto = ["bitcoin", "ethirium", "litecoin"]
-liCryptoBal = [bitcoinBal, ethiriumBal, litecoinBal] = [0.2323, 1.1, 0]
 
-bal = buyCrypto(liCrypto, bal, liCryptoBal, liCryptoPrices)
+#bal = buyCrypto(liCrypto, bal, liCryptoBal, liCryptoPrices)
 
-bal = sellCrypto(bal, liCrypto, liCryptoBal, liCryptoPrices)
+#bal = sellCrypto(bal, liCrypto, liCryptoBal, liCryptoPrices)
 
 #printBalance()
 #printCrypto(liCrypto, liCryptoBal, liCryptoPrices)
