@@ -1,7 +1,7 @@
 import random
 
 bal = 1000 # $
-day = 0
+day = 1
 
 liCryptoPrices = [bitcoin, ethirium, litecoin] = [99000.0, 4900.0, 800.0] # $
 
@@ -115,10 +115,49 @@ def printCrypto(liCrypto, liCryptoBal, liCryptoPrices):
             print("\tCrypto: ", liCrypto[li], "=", liCryptoBal[li], "колв.", 
                 "Total: ", round(liCryptoBal[li] * liCryptoPrices[li], 2), "$")
 
-for i in range(10):
-    day += 1
-    liCryptoPrices = changeTrafic(liStabilisation, liCryptoPrices)
-    print("\tDay: ", day)
+#for i in range(10):
+#    day += 1
+#    liCryptoPrices = changeTrafic(liStabilisation, liCryptoPrices)
+#    print("\tDay: ", day)
+
+# menu
+while True:
+    print("\n- - - - MENU - - - -")
+    print("1) Buy crypto")
+    print("2) Sell crypto")
+    print("3) Trade logic")
+    print("4) Print balance")
+    print("5) Print crypto balance")
+    print("0) Exit")
+    print("Enter) Press Enter for next day")
+    print("\nDay: ", day)
+
+    choice = input("Type number: ")
+
+    if choice == "1":
+        bal = buyCrypto(liCrypto, bal, liCryptoBal, liCryptoPrices)
+        continue
+    elif choice == "2":
+        bal = sellCrypto(bal, liCrypto, liCryptoBal, liCryptoPrices)
+        continue
+    elif choice == "3":
+        tradeLogic()
+        continue
+    elif choice == "4":
+        printBalance()
+        continue
+    elif choice == "5":
+        printCrypto(liCrypto, liCryptoBal, liCryptoPrices)
+        continue
+    elif choice == "":
+        day += 1
+        liCryptoPrices = changeTrafic(liStabilisation, liCryptoPrices)
+        continue
+    elif choice == "0":
+        break
+    else:
+        print("Error choice")
+        continue
 
 
 #bal = buyCrypto(liCrypto, bal, liCryptoBal, liCryptoPrices)
