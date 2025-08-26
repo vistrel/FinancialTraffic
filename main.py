@@ -1,6 +1,6 @@
 import random
 
-bal = 1000 # $
+bal = 1000.0 # $
 day = 1
 
 liCryptoPrices = [bitcoin, ethirium, litecoin] = [99000.0, 4900.0, 800.0] # $
@@ -10,8 +10,11 @@ liStabilisation = [bitcoinStabilisation, ethiriumStabilisation, litecoinStabilis
 liCrypto = ["bitcoin", "ethirium", "litecoin"]
 liCryptoBal = [bitcoinBal, ethiriumBal, litecoinBal] = [0.2323, 1.1, 0]
 
+liCryptoPriceWeek = [5451, 2232, 3989]
+#print("Crypto prices: ", liCryptoPriceWeek[1])
+
 # меняется цена крипті каждую секунду
-def changeTrafic(liStabilisation, liCryptoPrices):
+def changeTrafic(liStabilisation, liCryptoPrices, liCryptoPriceWeek):
     RandNum = random.uniform(-4 ,4)
     #print(99000 + (99000 / 100 * (RandNum + liStabilisation[0])))
     for i in range(len(liCryptoPrices)):
@@ -19,20 +22,24 @@ def changeTrafic(liStabilisation, liCryptoPrices):
         #liStabilisation[i] = liStabilisation[i] - 0.01
     printCryptoPrice(liCrypto, liCryptoPrices)
     #print("bitcoin: ", bitcoin)
+    liCryptoPriceWeek.append(liCryptoPrices[0])
+    if len(liCryptoPriceWeek) > 7:
+        liCryptoPriceWeek.pop(0)
+    print("Bitcoin prices week: ", liCryptoPriceWeek)
     return liCryptoPrices
 
 # покупка крипты
 def buyCrypto(crypto, bal, liCryptoBal, liCryptoPrices):
     print("\n- - - - BUY - - - -") 
-    #cryptoNum = int(input("\t1)Bitcoin\n\t2)Ethirium\n\t3)Litecoin\nType crypto for buy: "))
-    cryptoNum = 3
+    cryptoNum = int(input("\t1)Bitcoin\n\t2)Ethirium\n\t3)Litecoin\nType crypto for buy: "))
+    #cryptoNum = 3
 
     if cryptoNum > len(crypto) or cryptoNum < 1:
         print("Error cryptoNum")
         return
 
-    #value = input("Type value $: ")
-    value = "429"
+    value = input("Type value $: ")
+    #value = "429"
 
     if value.isdigit():
         value = int(value)
@@ -64,8 +71,8 @@ def printCryptoPrice(liCrypto, liCryptoPrices):
 def sellCrypto(bal, crypto, liCryptoBal, liCryptoPrices):
     print("\n- - - - SELL - - - -")
 
-    #cryptoNum = int(input("\t1)Bitcoin\n\t2)Ethirium\n\t3)Litecoin\nType crypto for sell: "))
-    cryptoNum = 3
+    cryptoNum = int(input("\t1)Bitcoin\n\t2)Ethirium\n\t3)Litecoin\nType crypto for sell: "))
+    #cryptoNum = 3
 
     if cryptoNum > len(crypto) or cryptoNum < 1:
         print("Error cryptoNum")
@@ -76,8 +83,8 @@ def sellCrypto(bal, crypto, liCryptoBal, liCryptoPrices):
         return
     print("You have: ", liCryptoBal[cryptoNewNum], f"{crypto[cryptoNewNum]}")
     
-    #value = input("Type value crypto: ")
-    value = "0.15"
+    value = input("Type value crypto: ")
+    #value = "0.15"
     value = float(value)
     if value > 0:
         #value = int(value)
@@ -96,14 +103,55 @@ def sellCrypto(bal, crypto, liCryptoBal, liCryptoPrices):
 
 
 # логика прибыльной торговли
-def tradeLogic():
-    print("trade")
+def tradeLogic(crypto, bal, liCryptoPriceWeek):
+    print("\n- - - TRADE - - -")  
+    stopLoss = 0.05  # 5% stop loss
+    takeProfit = 0.1  # 10% take profit
+
+    #value = input("Type value $: ")
+    value = "300"
+    
+    if value.isdigit():
+        value = int(value)
+        if value > bal:
+            print("Not enough money")
+            return
+    else:
+        print("Error")
+        return
+    print("bal before buy: ", bal)
+    #cryptoNum = int(input("\t1)Bitcoin\n\t2)Ethirium\n\t3)Litecoin\nType crypto for buy: "))
+    cryptoNum = 1
+    cryptoNewNum = cryptoNum - 1
+    print(f"Buy {crypto[cryptoNewNum]} for: ", value, "$")
+    bal = bal - value
+    liCryptoBal[cryptoNewNum] = liCryptoBal[cryptoNewNum] + (value / liCryptoPrices[cryptoNewNum])
+    print("Balance after buy: ", bal)
+
+    print("Trade money is: ", value, "$")
+    print("Trade crypto is: ", liCrypto[0])
+    print("Stop Loss: ", stopLoss * 100, "%")
+    print("Take Profit: ", takeProfit * 100, "%")
+    # Здесь должна быть логика торговли
+    if liCryptoPriceWeek[-1] > liCryptoPriceWeek[0] * (1 + takeProfit):
+        print(liCryptoPriceWeek[-1], liCryptoPriceWeek[0], (1 + takeProfit))
+        print("Take Profit triggered!")
+        bal += value * (1 + takeProfit)
+    elif liCryptoPriceWeek[-1] < liCryptoPriceWeek[0] * (1 - stopLoss):
+        print(liCryptoPriceWeek[-1], liCryptoPriceWeek[0], (1 - stopLoss))
+        print("Stop Loss triggered!")
+        bal -= value * stopLoss
+    else:
+        print("No trade action taken.")
+    return bal
+     
+    
     
 
 # балик
-def printBalance():
-    print("\n- - - BALANCE - - -")    
-    print("Balance: ", bal, "$")
+def printBalance(bal):
+    print("\n- - - BALANCE - - -")   
+    print("Balance: ", round(bal, 2), "$")
 
 # крипто балик
 def printCrypto(liCrypto, liCryptoBal, liCryptoPrices):
@@ -141,17 +189,17 @@ while True:
         bal = sellCrypto(bal, liCrypto, liCryptoBal, liCryptoPrices)
         continue
     elif choice == "3":
-        tradeLogic()
+        bal = tradeLogic(liCrypto, bal, liCryptoPriceWeek)
         continue
     elif choice == "4":
-        printBalance()
+        printBalance(bal)
         continue
     elif choice == "5":
         printCrypto(liCrypto, liCryptoBal, liCryptoPrices)
         continue
     elif choice == "":
         day += 1
-        liCryptoPrices = changeTrafic(liStabilisation, liCryptoPrices)
+        liCryptoPrices = changeTrafic(liStabilisation, liCryptoPrices, liCryptoPriceWeek)
         continue
     elif choice == "0":
         break
@@ -160,11 +208,6 @@ while True:
         continue
 
 
-#bal = buyCrypto(liCrypto, bal, liCryptoBal, liCryptoPrices)
-
-#bal = sellCrypto(bal, liCrypto, liCryptoBal, liCryptoPrices)
-
-#printBalance()
 #printCrypto(liCrypto, liCryptoBal, liCryptoPrices)
 
 print("\n- Program end -")
