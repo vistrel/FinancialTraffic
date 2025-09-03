@@ -2,22 +2,28 @@ import random
 
 bal = 1000.0 # $
 day = 1
+take = 0
+stop = 0
 value = "0"
 bought = False
+activateTrade = False
+buy_day = None
+buyCryptoPrice = None
+CryptoAmount = None
 
-liCryptoPrices = [bitcoin, ethirium, litecoin] = [99126.0, 4900.0, 800.0] # $
+liCryptoPrices = [bitcoin, ethirium, litecoin] = [100000.0, 4900.0, 800.0] # $
 
-liStabilisation = [bitcoinStabilisation, ethiriumStabilisation, litecoinStabilisation] = [0.008, 0.006, 0.0]
+liStabilisation = [bitcoinStabilisation, ethiriumStabilisation, litecoinStabilisation] = [0.009, 0.008, 0.0]
 
 liCrypto = ["bitcoin", "ethirium", "litecoin"]
-liCryptoBal = [bitcoinBal, ethiriumBal, litecoinBal] = [0, 1.1, 0]
+liCryptoBal = [bitcoinBal, ethiriumBal, litecoinBal] = [0, 0.132, 0.312]
 
 liCryptoPriceWeek = [99111, 99123, 99200, 99100, 99000, 99200]
 #print("Crypto prices: ", liCryptoPriceWeek[1])
 
 # меняется цена крипті каждую секунду
 def changeTrafic(liStabilisation, liCryptoPrices, liCryptoPriceWeek):
-    RandNum = random.uniform(-4 ,4)
+    RandNum = random.uniform(-3 ,3)
     #print(99000 + (99000 / 100 * (RandNum + liStabilisation[0])))
     for i in range(len(liCryptoPrices)):
         liCryptoPrices[i] = liCryptoPrices[i] + (liCryptoPrices[i] / 100 * (RandNum + liStabilisation[i]))
@@ -131,13 +137,15 @@ def buyLongShort(bal, crypto, bought):
     print(f"Buy price {crypto[cryptoNewNum]} is: ", buyCryptoPrice, "$")
     print("Balance after buy: ", bal)
     print("\t! Now you have: ", liCryptoBal[cryptoNewNum], f"{crypto[cryptoNewNum]}")
-    return value, bought, buyCryptoPrice, CryptoAmount
+    global buy_day
+    buy_day = day
+    return value, bought, buyCryptoPrice, CryptoAmount, bal
 
 
 # логика прибыльной торговли
-def tradeLogic(crypto, bal, liCryptoPriceWeek, value, bought, buyCryptoPrice, liCryptoPrices, CryptoAmount):
+def tradeLogic(crypto, bal, liCryptoPriceWeek, value, bought, buyCryptoPrice, liCryptoPrices, CryptoAmount, activateTrade, take, stop):
     print("\n- - - TRADE - - -")  
-    stopLoss = 0.05  # 5% stop loss
+    stopLoss = 0.1  # % stop loss
     takeProfit = 0.1  # 10% take profit
     
     
@@ -150,20 +158,24 @@ def tradeLogic(crypto, bal, liCryptoPriceWeek, value, bought, buyCryptoPrice, li
     if liCryptoPrices[0] > buyCryptoPrice * (1 + takeProfit):
         #print(liCryptoPrices[0], buyCryptoPrice, (1 + takeProfit), buyCryptoPrice * (1 + takeProfit))
         print("\n<3 Take Profit triggered!")
+        take += 1
         liCryptoBal[0] = liCryptoBal[0] - CryptoAmount
         bal = bal + (CryptoAmount * liCryptoPrices[0])
-        print(f"! Sell {crypto[0]} for: ", round(CryptoAmount * liCryptoPrices[0], 2), "$")
+        print(f"+ Sell {crypto[0]} for: ", round(CryptoAmount * liCryptoPrices[0], 2), "$")
         bought = False
-    elif liCryptoPrices[0] < liCryptoPrices[0] * (1 - stopLoss):
-        print(liCryptoPrices[0], liCryptoPrices[0], (1 - stopLoss))
-        print("Stop Loss triggered!")
-        bal -= value * stopLoss
+        #activateTrade = False
+    elif liCryptoPrices[0] < buyCryptoPrice * (1 - stopLoss):
+        #print(liCryptoPrices[0], buyCryptoPrice, (1 - stopLoss), buyCryptoPrice * (1 - stopLoss))
+        print("0_0 Stop Loss triggered!")
+        stop += 1
+        liCryptoBal[0] = liCryptoBal[0] - CryptoAmount
+        bal = bal + (CryptoAmount * liCryptoPrices[0])
         bought = False
+        #activateTrade = False
     else:
-        print("No trade action taken.")
-    return bal, bought
+        print("-_- No trade action taken.")
+    return bal, bought, activateTrade, take, stop
      
-    
     
 
 # балик
@@ -181,6 +193,33 @@ def printCrypto(liCrypto, liCryptoBal, liCryptoPrices):
             print("\tCrypto: ", liCrypto[li], "=", liCryptoBal[li], "колв.", 
                 "Total: ", round(liCryptoBal[li] * liCryptoPrices[li], 2), "$")
 
+def autoTradeLogic(bought, bal, liCrypto, liCryptoPriceWeek, value, liCryptoPrices, activateTrade, day, buyCryptoPrice, CryptoAmount):
+        activateTrade = True
+        global take, stop, buy_day
+        dayBuy = 0
+        # проверка на падение крипты
+        #print(liCryptoPriceWeek[0], liCryptoPriceWeek[1], liCryptoPriceWeek[-1], liCryptoPriceWeek[-2])
+        if liCryptoPriceWeek[-1] < liCryptoPriceWeek[-2] < liCryptoPriceWeek[-3] < liCryptoPriceWeek[-4] < liCryptoPriceWeek[-5] and bought == False: 
+            print("\n! Crypto is fall down!")
+            dayBuy = day
+            bought = True
+            # закупка крипты
+            result = buyLongShort(bal, liCrypto, bought)
+            if result is None:
+                pass
+            value, bought, buyCryptoPrice, CryptoAmount, bal = result # type: ignore
+        else:
+            print("\n! Crypto is not fall down!")
+        if bought and buyCryptoPrice is not None and CryptoAmount is not None:
+            if buy_day == day:                     
+                print("Skipping trade on buy day.")
+            else:
+                bal, bought, activateTrade, take, stop = tradeLogic(liCrypto, bal, liCryptoPriceWeek, value, bought, buyCryptoPrice, liCryptoPrices, CryptoAmount, activateTrade, take, stop)
+        else:
+            print("No trade action taken or not enough data for tradeLogic.")
+        return bought, bal, activateTrade, buyCryptoPrice, CryptoAmount
+
+
 #for i in range(10):
 #    day += 1
 #    liCryptoPrices = changeTrafic(liStabilisation, liCryptoPrices)
@@ -188,14 +227,24 @@ def printCrypto(liCrypto, liCryptoBal, liCryptoPrices):
 
 # menu
 while True:
+    if activateTrade:
+        bought, bal, activateTrade, buyCryptoPrice, CryptoAmount = autoTradeLogic(bought, bal, liCrypto, liCryptoPriceWeek, value, liCryptoPrices, activateTrade, day, buyCryptoPrice, CryptoAmount)
+    elif bought:
+        bal, bought, activateTrade, take, stop = tradeLogic(liCrypto, bal, liCryptoPriceWeek, value, bought, buyCryptoPrice, liCryptoPrices, CryptoAmount, activateTrade, take, stop)
+    else:
+        pass
+
     print("\n- - - - MENU - - - -")
     print("1) Buy crypto")
     print("2) Sell crypto")
     print("3) Trade logic")
     print("4) Print balance")
     print("5) Print crypto balance")
+    print("6) Activate auto trade logic")
     print("0) Exit")
     print("Enter) Press Enter for next day")
+    print("\nTake profit count: ", take)
+    print("Stop loss count: ", stop)
     print("\nDay: ", day)
 
     choice = input("Type number: ")
@@ -211,16 +260,23 @@ while True:
             result = buyLongShort(bal, liCrypto, bought)
             if result is None:
                 continue 
-            value, bought, buyCryptoPrice, CryptoAmount = result
+            value, bought, buyCryptoPrice, CryptoAmount, bal = result
         else:
             print("!!! already bought")
-        bal, bought = tradeLogic(liCrypto, bal, liCryptoPriceWeek, value, bought, buyCryptoPrice, liCryptoPrices, CryptoAmount)
+        bal, bought, activateTrade, take, stop = tradeLogic(liCrypto, bal, liCryptoPriceWeek, value, bought, buyCryptoPrice, liCryptoPrices, CryptoAmount, activateTrade, take, stop)
         continue
     elif choice == "4":
         printBalance(bal)
         continue
     elif choice == "5":
         printCrypto(liCrypto, liCryptoBal, liCryptoPrices)
+        continue
+    elif choice == "6":
+        if activateTrade == False and bought == False:
+            print("xD Try to activate auto-trade logic")
+            bought, bal, activateTrade, buyCryptoPrice, CryptoAmount = autoTradeLogic(bought, bal, liCrypto, liCryptoPriceWeek, value, liCryptoPrices, activateTrade, day, buyCryptoPrice, CryptoAmount)
+        else:
+            print("! already activate")
         continue
     elif choice == "":
         day += 1
